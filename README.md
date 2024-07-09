@@ -1,38 +1,24 @@
 # Generative Modeling by Estimating Gradients of the Data Distribution
 
-This repo contains the official implementation for the NeurIPS 2019 paper 
-[Generative Modeling by Estimating Gradients of the Data Distribution](https://arxiv.org/abs/1907.05600), 
-
-by __Yang Song__ and __Stefano Ermon__. Stanford AI Lab.
-
-**Note**: **The method has been greatly stabilized by the subsequent work
-[Improved Techniques for Training Score-Based Generative Models](https://arxiv.org/abs/2006.09011) ([code](https://github.com/ermongroup/ncsnv2)) and more recently extended by [Score-Based Generative Modeling through Stochastic Differential Equations](https://arxiv.org/abs/2011.13456) ([code](https://github.com/yang-song/score_sde)). This codebase is therefore not recommended for new projects anymore.**
+This repository contains the official implementation for the NeurIPS 2019 paper [Generative Modeling by Estimating Gradients of the Data Distribution](https://arxiv.org/abs/1907.05600) by **Yang Song** and **Stefano Ermon** from Stanford AI Lab.
 
 -------------------------------------------------------------------------------------
-We describe a new method of generative modeling based on estimating the derivative of the log density 
-function (_a.k.a._, Stein score) of the data distribution. We first perturb our training data by different Gaussian noise with progressively smaller variances. Next, we estimate the score function for each perturbed data distribution, by training a shared neural network named the _Noise Conditional Score Network (NCSN)_ using _score matching_. We can directly produce samples from our NSCN with _annealed Langevin dynamics_.
 
-
+We introduce a novel method for generative modeling that estimates the derivative of the log density function (Stein score) of the data distribution. This method involves perturbing the training data with Gaussian noise of progressively smaller variances. We then estimate the score function for each perturbed data distribution by training a shared neural network called the _Noise Conditional Score Network (NCSN)_ using _score matching_. Samples can be directly generated from the NCSN using _annealed Langevin dynamics_.
 ## Dependencies
 
-* PyTorch
-
-* PyYAML
-
-* tqdm
-
-* pillow
-
-* tensorboardX
-
-* seaborn
-
+- PyTorch
+- PyYAML
+- tqdm
+- pillow
+- tensorboardX
+- seaborn
 
 ## Running Experiments
 
 ### Project Structure
 
-`main.py` is the common gateway to all experiments. Type `python main.py --help` to get its usage description.
+`main.py` is the main entry point for all experiments. Use `python main.py --help` to see the usage description.
 
 ```bash
 usage: main.py [-h] [--runner RUNNER] [--config CONFIG] [--seed SEED]
@@ -44,8 +30,8 @@ optional arguments:
   --runner RUNNER       The runner to execute
   --config CONFIG       Path to the config file
   --seed SEED           Random seed
-  --run RUN             Path for saving running related data.
-  --doc DOC             A string for documentation purpose
+  --run RUN             Path for saving running related data
+  --doc DOC             A string for documentation purposes
   --verbose VERBOSE     Verbose level: info | debug | warning | critical
   --test                Whether to test the model
   --resume_training     Whether to resume training
@@ -53,52 +39,45 @@ optional arguments:
                         The directory of image outputs
 ```
 
-There are four runner classes.
+There are four runner classes:
 
-* `AnnealRunner` The main runner class for experiments related to NCSN and annealed Langevin dynamics.
-* `BaselineRunner` Compared to `AnnealRunner`, this one does not anneal the noise. Instead, it uses a single fixed noise variance.
-* `ScoreNetRunner` This is the runner class for reproducing the experiment of Figure 1 (Middle, Right)
-* `ToyRunner` This is the runner class for reproducing the experiment of Figure 2 and Figure 3.
+- `AnnealRunner`: Main runner for experiments involving NCSN and annealed Langevin dynamics.
+- `BaselineRunner`: Similar to `AnnealRunner` but uses a single fixed noise variance.
+- `ScoreNetRunner`: Runner for reproducing the experiment shown in Figure 1 (Middle, Right).
+- `ToyRunner`: Runner for reproducing experiments shown in Figure 2 and Figure 3.
 
-Configuration files are stored in  `configs/`. For example, the configuration file of `AnnealRunner` is `configs/anneal.yml`. Log files are commonly stored in `run/logs/doc_name`, and tensorboard files are in `run/tensorboard/doc_name`. Here `doc_name` is the value fed to option `--doc`.
+Configuration files are stored in the `configs/` directory. For example, the configuration file for `AnnealRunner` is `configs/anneal.yml`. Log files are stored in `run/logs/doc_name`, and tensorboard files are in `run/tensorboard/doc_name`, where `doc_name` is the value provided to the `--doc` option.
 
 ### Training
 
-The usage of `main.py` is quite self-evident. For example, we can train an NCSN by running
+To train an NCSN, use the following command:
 
 ```bash
 python main.py --runner AnnealRunner --config anneal.yml --doc cifar10
 ```
 
-Then the model will be trained according to the configuration files in `configs/anneal.yml`. The log files will be stored in `run/logs/cifar10`, and the tensorboard logs are in `run/tensorboard/cifar10`.
+This command trains the model based on the configuration in `configs/anneal.yml`. Log files will be saved in `run/logs/cifar10`, and tensorboard logs will be in `run/tensorboard/cifar10`.
 
 ### Sampling
 
-Suppose the log files are stored in `run/logs/cifar10`. We can produce samples to folder `samples` by running
+To generate samples and save them to the `samples` directory, use:
 
 ```bash
 python main.py --runner AnnealRunner --test -o samples
 ```
 
-### Checkpoints
 
-We provide pretrained checkpoints [run.zip](https://drive.google.com/file/d/1BF2mwFv5IRCGaQbEWTbLlAOWEkNzMe5O/view?usp=sharing). Extract the file to the root folder. You should be able to produce samples like the following using this checkpoint.
 
-| Dataset | Sampling procedure |
-| :------------ | :-------------------------: |
-| MNIST |  ![MNIST](assets/mnist_large.gif)|
-| CelebA |  ![Celeba](assets/celeba_large.gif)|
-|CIFAR-10 |  ![CIFAR10](assets/cifar10_large.gif)|
 
-### Evaluation
-Please refer to Appendix B.2 of our paper for details on hyperparameters and model selection. When computing inception and FID scores, we first generate images from our model, and use the [official code from OpenAI](https://github.com/openai/improved-gan/tree/master/inception_score) and the [original code from TTUR authors](https://github.com/bioinf-jku/TTUR) to obtain the scores.
+| CIFAR-10| ![CIFAR10](assets/cifar10_large.gif) |
+
 
 
 ## References
 
-Large parts of the code are derived from [this Github repo](https://github.com/ermongroup/sliced_score_matching) (the official implementation of the [sliced score matching paper](https://arxiv.org/abs/1905.07088))
+Large parts of the code are derived from [this GitHub repo](https://github.com/ermongroup/sliced_score_matching) (the official implementation of the [sliced score matching paper](https://arxiv.org/abs/1905.07088)).
 
-If you find the code / idea inspiring for your research, please consider citing the following
+If you find the code or ideas inspiring for your research, please consider citing the following:
 
 ```bib
 @inproceedings{song2019generative,
@@ -109,23 +88,3 @@ If you find the code / idea inspiring for your research, please consider citing 
   year={2019}
 }
 ```
-
-and / or
-
-```bib
-@inproceedings{song2019sliced,
-  author    = {Yang Song and
-               Sahaj Garg and
-               Jiaxin Shi and
-               Stefano Ermon},
-  title     = {Sliced Score Matching: {A} Scalable Approach to Density and Score
-               Estimation},
-  booktitle = {Proceedings of the Thirty-Fifth Conference on Uncertainty in Artificial
-               Intelligence, {UAI} 2019, Tel Aviv, Israel, July 22-25, 2019},
-  pages     = {204},
-  year      = {2019},
-  url       = {http://auai.org/uai2019/proceedings/papers/204.pdf},
-}
-```
-
-# -Generative-Modeling-by-Estimating-Gradients-of-the-Data-Distribution-implementation
